@@ -1,5 +1,6 @@
-libname q "/home/kennesaw/Sunay/Dividends";
-proc sort data=q.fullcomp out=data1;
+libname z "/scratch/kennesaw/";
+
+proc sort data=z.fullcomp out=data1;
 	by gvkey fyear;
 run;
 

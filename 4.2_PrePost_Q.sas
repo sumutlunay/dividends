@@ -1,5 +1,6 @@
-libname q "/home/kennesaw/Sunay/Dividends";
-proc sort data=q.fullcomp_q out=data1;
+libname z "/scratch/kennesaw/";
+
+proc sort data=z.fullcomp_q out=data1;
 	by gvkey fyearq datacqtr;
 run;
 
@@ -159,7 +160,7 @@ proc export data=goprivate3
 run;
 
 	/*Save a SAS version for visuals*/
-data q.goprivate_q;
+data z.goprivate_q;
 set goprivate3;
 run;
 

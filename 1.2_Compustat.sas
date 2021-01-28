@@ -204,13 +204,14 @@ run;
 	
 /*Define local folders on home directory*/
 libname q "/home/kennesaw/Sunay/Dividends";
+libname z "/scratch/kennesaw/";
 
 /*Add numdivs variable from quarterly data*/
 proc sql;
 create table base8
 as select a.*, b.numdivs, b.divs4, b.divs3, b.divs2, b.divs1
 from base7 as a
-left join q.numdivs as b
+left join z.numdivs as b
 on a.gvkey = b.gvkey
 and a.fyear = b.fyearq;
 quit;
@@ -300,7 +301,7 @@ proc sql;
 	and a.fyear=b.fyear;
 quit;
 
-data q.fullcomp;
+data z.fullcomp;
 	set base9;
 	if 1978<=fyear<=2019;
 	if missing(private) then private=0;

@@ -226,6 +226,7 @@ run;
 
 /*Define local folders on home directory*/
 libname q "/home/kennesaw/Sunay/Dividends";
+libname z "/scratch/kennesaw/";
 
 /*Create separate dataset with numdivs to merge with annual data*/
 data numdivs;
@@ -233,7 +234,7 @@ set base6;
 keep gvkey fyearq numdivs divs4 divs3 divs2 divs1;
 run;
 
-proc sort data=numdivs out=q.numdivs nodupkey;
+proc sort data=numdivs out=z.numdivs nodupkey;
 by gvkey fyearq;
 run;
 
@@ -298,7 +299,7 @@ proc sql;
 	and a.fyearq = b.fyear;
 quit;
 
-data q.fullcomp_q;
+data z.fullcomp_q;
 	set base7;
 	if 1978<=fyearq<=2019;
 	if missing(private) then private=0;

@@ -1,7 +1,8 @@
 /*Annual Data*/
-libname q "/home/kennesaw/Sunay/Dividends";
+libname z "/scratch/kennesaw/";
+
 *proc sort data=q.gopublic out=data1;
-proc sort data=q.goprivate out=data1;
+proc sort data=z.goprivate out=data1;
 	by gvkey private;
 run;
 
@@ -38,9 +39,9 @@ proc datasets lib=work kill memtype=data nolist; run;
 quit;
 
 /*Quarterly Data*/
-libname q "/home/kennesaw/Sunay/Dividends";
+libname z "/scratch/kennesaw/";
 *proc sort data=q.gopublic_q out=data1;
-proc sort data=q.goprivate_q out=data1;
+proc sort data=z.goprivate_q out=data1;
 	by gvkey private;
 run;
 

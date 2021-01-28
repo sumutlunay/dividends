@@ -1,5 +1,3 @@
-libname q "/home/kennesaw/Sunay/Dividends";
-
 /*Annual*/
 proc import out= levelfull 
 datafile = "/home/kennesaw/Sunay/Dividends/levelfull.dta";

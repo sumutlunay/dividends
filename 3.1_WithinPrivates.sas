@@ -1,7 +1,7 @@
-libname q "/home/kennesaw/Sunay/Dividends";
+libname z "/scratch/kennesaw/";
 
 data data1;
-	set q.fullcomp;
+	set z.fullcomp;
 	array vars(4) salgrowth logat da opprofit;
 	misval = cmiss(of vars[*]);
 	if misval=0;
