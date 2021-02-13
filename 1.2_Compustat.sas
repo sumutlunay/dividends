@@ -183,7 +183,7 @@ data base6;
 	if EBIT<0 then int_cov=0;
 	intang = intan/at;
 	ppe = (ppegt-dpact)/lagat;
-	growth = (sale-lagsale)/lagsale;
+	, = (sale-lagsale)/lagsale;
 run;
 
 proc rank data=base6 out=base7 ties=low groups=5;

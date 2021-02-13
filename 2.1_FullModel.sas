@@ -14,7 +14,8 @@ run;
 	/*Winsorization*/
 %winsorize(inset=data1, outset=data2, sortvar=fyear, 
 vars= 	salgrowth lev da opprofit profit div1 div2 payout1 payout2
-		dvc repurch repurch1 repurch2 cfo fcf involat,
+		dvc repurch repurch1 repurch2 cfo fcf involat
+	/*	int_cov intang ppe growth */,
 perc1=1, trim=0);
 
 	/*Export to Stata*/
