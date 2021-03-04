@@ -9,6 +9,12 @@ data data1;
 	if coop=1 then delete;
 	if sub_coop=1 then delete;
 	if missing(financier) then financier=0;
+
+	numsic=input(sic,4.);
+	if 4900<=numsic<=4949 then delete;/*Delete financials*/
+	if 6000<=numsic<=6999 then delete;/*Delete utilities*/ 
+
+	if 1984<=fyearq<=2018;
 run;
 
 	/*Winsorization*/
