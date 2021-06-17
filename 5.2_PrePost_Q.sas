@@ -22,6 +22,10 @@ data data1;
 	if first.gvkey then	lagpe2=.;
 	indicator = private - lagpriv;
 	divchg = divind - lagdivind;
+
+	if 4900<=numsic<=4949 then delete;/*Delete financials*/
+	if 6000<=numsic<=6999 then delete;/*Delete utilities*/ 
+	if 1984<=fyearq<=2018;
 run;	
 
 data indicators;

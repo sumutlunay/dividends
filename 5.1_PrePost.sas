@@ -65,6 +65,9 @@ data gopublic1;
 	if coop=1 then delete;
 	if sub_coop=1 then delete;
 	if missing(financier) then financier=0;
+	if 4900<=numsic<=4949 then delete;/*Delete financials*/
+	if 6000<=numsic<=6999 then delete;/*Delete utilities*/ 
+	if 1984<=fyear<=2018;
 	yearspass = fyear - indyear;
 	if (yearspass<0 and private=0) then delete;
 run;
@@ -97,6 +100,9 @@ data goprivate1;
 	if coop=1 then delete;
 	if sub_coop=1 then delete;
 	if missing(financier) then financier=0;
+	if 4900<=numsic<=4949 then delete;/*Delete financials*/
+	if 6000<=numsic<=6999 then delete;/*Delete utilities*/ 
+	if 1984<=fyear<=2018;
 	yearspass = fyear - indyear;
 	if (yearspass<0 and private=1) then delete;
 run;

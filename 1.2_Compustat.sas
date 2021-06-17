@@ -4,7 +4,7 @@ proc sql;
 			SPIOP, WDP,	AT,	CEQ, CIK, CONM, CSHO, CUSIP, EXCHG,	FIC, FYR, IB, LT, OANCF, PRCC_F, PRCC_C, 
 			SALE, SPI, TIC, SICH, OIBDP, DVC, OIADP, XRD, DLTT, ADRR, ACT,  LCT, CH, DD1, TXP, CAPX, DP, DV,
 			WCAP, RE, PPENT, PPEGT, COGS, XIDOC, RECCH, XINT, IBC, RECT, INVT, DLC, XAD, AP, INTAN, RECD, AU, PI,
-			TSTKC, PRSTKC, SSTK, DVPSX_F, AJEX, EPSPX, dpact, ebit, DVPSP_C, DVPSP_F, INTPN, PI, NI
+			TSTKC, PRSTKC, SSTK, DVPSX_F, AJEX, EPSPX, dpact, ebit, DVPSP_C, DVPSP_F, INTPN, NI, PSTKRV
 		from compd.funda;
 quit;
 
@@ -13,26 +13,28 @@ data base1;
 	set base0;
 	if datafmt = "STD";/*Non restated data*/
 	if indfmt = "INDL"; /*Industrial format*/
-	if fyear ne .;
-	if at ne .;
+/* 	if fyear ne .; */
+/* 	if at ne .; */
 	logat = log(at);
 	lev = (DLTT/AT);
 	da = LT/AT;
 	profit = IB/AT;
 	opprofit = OIBDP/AT;
 	invest = capx/at;
+	if missing(dvc) then div1=0;
 	div1=dvc/OIBDP;
 	invat=1/at;
 	tang = PPENT/AT;
 	earnings = ib -(0.6*SPI);
+	purch1 = PRSTKC - PSTKRV;
 	purch2 = PRSTKC - SSTK;
 	if missing(ib) then loss=.;
 	else if ib<0 then loss=1;
 	else loss=0;
 	if dvc>0 then payer=1; else payer=0;
 	dps=dvc/csho;
-	eps=epspx;
-	epsalt=ib/csho;
+/* 	epsalt=epspx; */
+	eps=ib/csho;
 *	fcf = (OANCF-XIDOC+INTPN-((PI-NI)/PI)*XINT-CAPX)/AT;
 		if missing(DV) then DV=0;
 		if missing(CAPX) then CAPX=0;
@@ -46,9 +48,12 @@ data lags;
 				dvc = lagdv
 				TSTKC = lagtreas
 				dps = lagdps
-				sale = lagsale));
+				sale = lagsale
+				eps = lageps
+				EPSPX = lagalteps
+				DVPSP_F = lagaltdps));
 	lagyear=fyear+1;
-	keep gvkey lagyear lagat lagdv lagtreas lagdps lagsale;
+	keep gvkey lagyear lagat lagdv lagtreas lagdps lagsale lageps lagalteps lagaltdps;
 run;
 
 /*Create Lead Variables*/
@@ -79,13 +84,15 @@ data base3;
 	salgrowth = (leadsale-sale)/sale;
 	deldiv=(dvc-lagdv);
 	if TSTKC=0 and lagtreas=0
-		then repurch=purch2;
+		then repurch=purch1;
 		else repurch=TSTKC-lagtreas;
 	if repurch<0 then repurch=0;
+/* 	repurch=purch1; */
 	payout1=(dvc+repurch)/OIBDP;
 	payout2=(dvc+repurch)/lagat;
-	stockiss=-1*(purch2);
-
+	stockiss=-1*(purch1);
+	payoutps=(dvc+repurch)/csho;
+	
 	repurch1=repurch/OIBDP;
 	repurch2=repurch/lagat;
 	div2=dvc/lagat;
@@ -94,9 +101,10 @@ run;
 
 /*Create Lag Payout*/
 data lag2;
-	set base3 (rename=(payout1 = lagpayout1 payout2= lagpayout2));
+	set base3 (rename=(payout1 = lagpayout1 payout2 = lagpayout2
+						repurch = lagrepurch payoutps = lagpayoutps));
 	lagyear=fyear+1;
-	keep gvkey lagyear lagpayout1 lagpayout2;
+	keep gvkey lagyear lagrepurch lagpayout1 lagpayout2 lagpayoutps; 
 run;
 
 proc sql;
@@ -107,6 +115,22 @@ proc sql;
 	and a.fyear = b.lagyear;
 quit;
 
+data base3;
+	set base3;
+	chgdv = dvc - lagdv;
+	chgrepurch = repurch - lagrepurch;
+	
+	lagpayout = (lagdv + lagrepurch);
+	chgpayout = dvc+repurch - lagpayout;
+	chgpayoutps = payoutps - lagpayoutps; 
+	
+	chgdps = dps - lagdps;
+	chgeps = eps - lageps;
+	chgaltdps = DVPSP_F - lagaltdps;
+	chgalteps = EPSPX - lagalteps;
+	
+run;
+	
 	/*Volatility Measures*/
 	/*Income volatility up to 10 years back*/
 data window1;
@@ -194,10 +218,10 @@ run;
 data base7;
 	set base7;
 	numsic=input(sic,4.);
-	if 6000<=numsic<=6999 then delete;
-	if 4900<=numsic<=4939 then delete;
-	if numsic<=1000 then delete;
-	if numsic>=8999 then delete;
+/* 	if 6000<=numsic<=6999 then delete; */
+/* 	if 4900<=numsic<=4939 then delete; */
+/* 	if numsic<=1000 then delete; */
+/* 	if numsic>=8999 then delete; */
 	sic3=substr(sic,1,3);
 	ind3=input(sic3,3.);
 run;
@@ -273,17 +297,17 @@ data privatesfull;
 run;
 
 /*Additional Variables*/
-data privatesfull;
-	set privatesfull;
-	array vars(8) PE_own CEO_own Mgmt_own Group_own Employ_Own Tribe_own Family_Own Chairman;
-		do i=1 to 8;
-		if missing(vars(i)) then vars(i)=0;
-		end;
-run;
+/* data privatesfull; */
+/* 	set privatesfull; */
+/* 	array vars(8) PE_own CEO_own Mgmt_own Group_own Employ_Own Tribe_own Family_Own Chairman; */
+/* 		do i=1 to 8; */
+/* 		if missing(vars(i)) then vars(i)=0; */
+/* 		end; */
+/* run; */
 
 data privatesfull;
 	set privatesfull;
-	mgmt_ownership = Mgmt_own + Family_Own + Chairman + CEO_own;
+/* 	mgmt_ownership = Mgmt_own + Family_Own + Chairman + CEO_own; */
 	if (no_firms>200 and (equity_invested/no_firms)>30) then Many_PE=1; else Many_PE=0;
 run;
 

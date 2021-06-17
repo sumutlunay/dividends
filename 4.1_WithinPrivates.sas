@@ -10,12 +10,22 @@ data data1;
 	if coop=1 then delete;
 	if sub_coop=1 then delete;
 	if missing(financier) then financier=0;
+	if 4900<=numsic<=4949 then delete;/*Delete financials*/
+	if 6000<=numsic<=6999 then delete;/*Delete utilities*/ 
+	if 1984<=fyear<=2018;
+run;
 run;
 
 	/*Winsorization*/
 %winsorize(inset=data1, outset=data2, sortvar=fyear, 
 vars= 	salgrowth lev da opprofit profit div1 div2 payout1 payout2
-		repurch1 repurch2,
+		repurch1 repurch2
+		dvc lagdv chgdv
+		repurch lagrepurch chgrepurch
+		chgpayoutps payoutps lagpayoutps
+		dps lagdps chgdps DVPSP_F lagaltdps chgaltdps
+		eps lageps chgeps epspx lagalteps chgalteps
+		fcf cfo,
 perc1=1, trim=0);
 
 	/*Export to Stata*/

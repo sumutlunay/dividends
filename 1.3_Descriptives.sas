@@ -5,6 +5,12 @@ run;
 
 data levelfull;
 	set levelfull;
+	if soa1>1 then soa1=.;
+	if soa1<0 then soa1=.;
+	if soa2>1 then soa2=.;
+	if soa2<0 then soa2=.;
+	if soap1>1 then soap1=.;
+	if soap1<0 then soap1=.;
 	if repurch>0 then repayer=1; else repayer=0;
 	if repayer+payer>=1 then distributor=1; else distributor=0;
 	totpay = (dvc+repurch);
@@ -16,7 +22,7 @@ run;
 proc sql;
 create table stats
 as select private, dvc, repurch, totpay, div1, repurch1, payout1, div2, repurch2, payout2, payer, repayer, 
-			distributor, numdivs, divs4, divs3, divs2, divs1, DVPSP_F
+			distributor, numdivs, divs4, divs3, divs2, divs1, DVPSP_F, soa1, soap1
 from levelfull;
 quit;
 
@@ -68,7 +74,7 @@ run;
 proc sql;
 create table withinprivate
 as select ownership, private, dvc, repurch, totpay, div1, repurch1, payout1, div2, repurch2, payout2, payer, repayer, 
-			distributor, numdivs, divs4, divs3, divs2, divs1, DVPSP_F
+			distributor, numdivs, divs4, divs3, divs2, divs1, DVPSP_F, soa1, soap1
 from levelfull
 where private=1;
 quit;
@@ -83,7 +89,7 @@ run;
 proc sql;
 create table withinprivate
 as select PEGroup, MEGroup, private, dvc, repurch, totpay, div1, repurch1, payout1, div2, repurch2, payout2, payer, repayer, 
-			distributor, numdivs, divs4, divs3, divs2, divs1, DVPSP_F
+			distributor, numdivs, divs4, divs3, divs2, divs1, DVPSP_F, soa1, soap1
 from levelfull
 where private=1;
 quit;
@@ -107,6 +113,12 @@ run;
 
 data levelfull;
 	set levelfull;
+	if soa1>1 then soa1=.;
+	if soa1<0 then soa1=.;
+	if soa2>1 then soa2=.;
+	if soa2<0 then soa2=.;
+	if soap1>1 then soap1=.;
+	if soap1<0 then soap1=.;
 	if netrep>0 then repayer=1; else repayer=0;
 	if repayer+payer>=1 then distributor=1; else distributor=0;
 	totpay = (dvy+netrep);
@@ -118,7 +130,7 @@ run;
 proc sql;
 create table stats
 as select private, dvy, netrep, totpay, div1, netrepi, payouti, div2, netrepa, payouta, payer, repayer, distributor, 
-			numdivs, divs4, divs3, divs2, divs1, DVPSPQ
+			numdivs, divs4, divs3, divs2, divs1, DVPSPQ, soa1, soap1
 from levelfull;
 quit;
 
@@ -170,7 +182,7 @@ run;
 proc sql;
 create table withinprivate
 as select ownership, private, dvy, netrep, totpay, div1, netrepi, payouti, div2, netrepa, payouta, payer, repayer, distributor, 
-			numdivs, divs4, divs3, divs2, divs1, DVPSPQ
+			numdivs, divs4, divs3, divs2, divs1, DVPSPQ, soa1, soap1
 from levelfull
 where private=1;
 quit;
@@ -184,7 +196,7 @@ run;
 proc sql;
 create table withinprivate
 as select PEGroup, MEGroup, private, dvy, netrep, totpay, div1, netrepi, payouti, div2, netrepa, payouta, payer, repayer, distributor, 
-			numdivs, divs4, divs3, divs2, divs1, DVPSPQ
+			numdivs, divs4, divs3, divs2, divs1, DVPSPQ, soa1, soap1
 from levelfull
 where private=1;
 quit;
@@ -194,7 +206,6 @@ proc means data=withinprivate nolabels
 	n mean median;
 	class PEGroup MEGroup;
 run;
-
 
 /*House Cleaning*/
 proc datasets lib=work kill memtype=data nolist; run;

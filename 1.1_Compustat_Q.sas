@@ -4,7 +4,7 @@ proc sql;
 			SPIOPQ, WDPQ, ATQ,	CEQQ, CIK, CONM, CSHOQ, CUSIP, EXCHG,	FIC, FYR, IBQ, LTQ, OANCFY, 
 			SALEQ, SPIQ, TIC, OIBDPQ, DVY, OIADPQ, DLTTQ, ADRRQ, ACTQ,  LCTQ, CHQ, CAPXY, PPENTQ,
 			PRSTKCY, SSTKY, TSTKQ, PRCRAQ, PRSTKCY, PSTKQ, CSHIQ, PRCCQ, XINTQ, INTANQ, ppegtq, dpactq,
-			DVPSPQ
+			DVPSPQ, EPSPXQ
 		from compd.fundq;
 quit;
 
@@ -22,6 +22,8 @@ data base1;
 	profit = IBQ/ATQ;
 	opprofit = OIBDPQ/ATQ;
 	invest = capxy/atq;
+	dps = dvy/cshoq;
+	eps = IBQ/cshoq;
 	div1=DVY/OIBDPQ;
 	div2=DVY/atq;
 	invat=1/atq;
@@ -52,6 +54,10 @@ data base1;
 	lagPRSTKCY = lag(PRSTKCY);
 	lagPSTKQ = lag(PSTKQ);
 	lagsale=lag(saleq);
+	lagdps=lag(dps);
+	lageps=lag(eps);
+	lagaltdps=lag(DVPSPQ);
+	lagalteps=lag(EPSPXQ);
 	if first.gvkey then do
 		lagat=.;
 		lagdv=.;
@@ -59,6 +65,10 @@ data base1;
 		lagPRSTKCY=.;
 		lagPSTKQ = .;
 		lagsale = .;
+		lagdps=.;
+		lageps=.;
+		lagaltdps=.;
+		lagalteps=.;
 	end;
 run;
 
@@ -90,10 +100,12 @@ data base1;
 		else netrep=TSTKQ-lagtreas;
 
 	if netrep<0 then netrep=0;
+	if grossrep<0 then grossrep=0;
 	grossrepa = grossrep/lagat;
 	netrepa = netrep/lagat;
 
-	payouta = (netrep+dvy)/lagat;
+	payouta = (grossrep+dvy)/lagat;
+	payoutps = (grossrep+dvy)/cshoq;
 run;
 
 /*Alternative Denominator by Operating Profit*/
@@ -102,6 +114,36 @@ data base1;
 	grossrepi = grossrep/OIBDPQ;
 	netrepi = netrep/OIBDPQ;
 	payouti = (netrep+dvy)/OIBDPQ;
+run;
+
+/*Create More Lag Variables*/
+proc sort data=base1; 
+	by gvkey DATACQTR;
+run;
+
+data base1;
+	set base1;
+	by gvkey DATACQTR;
+	laggrossrep=lag(grossrep);
+	lagnetrep = lag(netrep);
+	lagpayoutps = lag(payoutps);
+	if first.gvkey then do
+		laggrossrep=.;
+		lagnetrep=.;
+	end;
+	lagpayout = lagdv + lagnetrep;
+	chggrossrep = grossrep - laggrossrep;
+	chgnetrep = netrep - lagnetrep;
+	chgdv = dvy - lagdv;
+	chgpayout = netrep+dvy-lagpayout;
+
+	chgdps = dps - lagdps;
+	chgeps = eps - lageps;
+
+	chgaltdps = DVPSPQ - lagaltdps;
+	chgalteps = EPSPXQ - lagalteps;
+	
+	chgpayoutps = payoutps-lagpayoutps;
 run;
 
 /****/
@@ -276,17 +318,17 @@ data privatesfull;
 run;
 
 /*Additional Variables*/
-data privatesfull;
-	set privatesfull;
-	array vars(8) PE_own CEO_own Mgmt_own Group_own Employ_Own Tribe_own Family_Own Chairman;
-		do i=1 to 8;
-		if missing(vars(i)) then vars(i)=0;
-		end;
-run;
+/* data privatesfull; */
+/* 	set privatesfull; */
+/* 	array vars(8) PE_own CEO_own Mgmt_own Group_own Employ_Own Tribe_own Family_Own Chairman; */
+/* 		do i=1 to 8; */
+/* 		if missing(vars(i)) then vars(i)=0; */
+/* 		end; */
+/* run; */
 
 data privatesfull;
 	set privatesfull;
-	mgmt_ownership = Mgmt_own + Family_Own + Chairman + CEO_own;
+/* 	mgmt_ownership = Mgmt_own + Family_Own + Chairman + CEO_own; */
 	if (no_firms>200 and (equity_invested/no_firms)>30) then Many_PE=1; else Many_PE=0;
 run;
 
